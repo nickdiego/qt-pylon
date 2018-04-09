@@ -3,15 +3,12 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QImage>
-#include <QTimer>
 #include <QVideoFrame>
 #include <QVideoSurfaceFormat>
 #include <QStringBuilder>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <pylon/PylonIncludes.h>
-
-namespace core {
 
 using Pylon::CInstantCamera;
 using Pylon::CPylonImage;
@@ -33,7 +30,6 @@ static long _frame_counter = 0;
 PylonCamera::PylonCamera(QObject *parent) :
     QObject(parent),
     m_surface(nullptr),
-    m_timer(nullptr),
     m_camera(nullptr)
 {
     PylonInitialize();
@@ -239,4 +235,3 @@ void PylonCamera::grabImage(CPylonImage &image)
     m_camera->StopGrabbing();
 }
 
-} // namespace core

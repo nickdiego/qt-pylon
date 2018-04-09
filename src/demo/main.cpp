@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     app::Controller controller;
     controller.start();
 
-    core::PylonCamera camera(&app);
+    PylonCamera camera(&app);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("controller", &controller);

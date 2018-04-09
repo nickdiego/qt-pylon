@@ -13,8 +13,6 @@ namespace Pylon {
     class CGrabResultPtr;
 }
 
-namespace core {
-
 class PylonCamera : public QObject, public Pylon::CImageEventHandler
 {
     Q_OBJECT
@@ -63,11 +61,8 @@ private:
 
 private:
     QAbstractVideoSurface *m_surface;
-    QTimer *m_timer;
     Pylon::CInstantCamera *m_camera;
     QString m_name;
 };
-
-} // namespace core
 
 #endif // PYLON_CAMERA_H
