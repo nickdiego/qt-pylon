@@ -39,7 +39,6 @@ Page {
                 }
             }
 
-        }
             Button {
                 text: "Capture"
                 anchors {
@@ -51,6 +50,8 @@ Page {
                     pylonCamera.capture();
                 }
             }
+
+        }
 
         Connections {
             target: pylonCamera
