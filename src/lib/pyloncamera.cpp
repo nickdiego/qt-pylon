@@ -150,7 +150,7 @@ void PylonCamera::captureInternal() {
     QString path = QString("/tmp/pylon-") % suffix % ".jpg";
 
     PylonCamera::toQImage(pylonImage).save(path);
-    emit imageCaptured(path);
+    emit imageCaptured(QUrl::fromLocalFile(path));
 }
 
 void PylonCamera::startGrabbing()

@@ -1,9 +1,10 @@
 #ifndef PYLON_CAMERA_H
 #define PYLON_CAMERA_H
 
+#include <QAbstractVideoSurface>
 #include <QObject>
 #include <QString>
-#include <QAbstractVideoSurface>
+#include <QUrl>
 
 #include <pylon/ImageEventHandler.h>
 
@@ -35,7 +36,7 @@ signals:
     void nameChanged();
     void videoSurfaceChanged();
     void newFrameGrabbed(QImage frame);
-    void imageCaptured(QString path);
+    void imageCaptured(QUrl url);
 
 public slots:
     void start();
