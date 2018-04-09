@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/StartPage.qml</file>
+        <file>qml/widgets/MainToolBar.qml</file>
+        <file alias="qtquickcontrols2.conf">data/conf/qtquickcontrols2.conf</file>
+        <file alias="images/menu.png">data/images/menu.png</file>
+        <file alias="images/drawer.png">data/images/drawer.png</file>
+    </qresource>
+</RCC>
