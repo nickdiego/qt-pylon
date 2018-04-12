@@ -184,8 +184,8 @@ void PylonCamera::OnImageGrabbed(CInstantCamera& camera, const CGrabResultPtr& p
         return;
     }
 
-    QImage img = toQImage(pylonImage);
-    emit frameGrabbedInternal(img);
+    QImage qimage = toQImage(pylonImage).convertToFormat(QImage::Format_RGB32);
+    emit frameGrabbedInternal(qimage);
 }
 
 QImage PylonCamera::toQImage(CPylonImage &pylonImage) {
@@ -197,11 +197,10 @@ QImage PylonCamera::toQImage(CPylonImage &pylonImage) {
     return img;
 }
 
-void PylonCamera::renderFrame(QImage img)
+void PylonCamera::renderFrame(const QImage &img)
 {
     if (m_surface) {
-        QImage cimg = img.convertToFormat(QImage::Format_RGB32);
-        QVideoFrame frame(cimg);
+        QVideoFrame frame(img);
         bool r = m_surface->present(frame);
         //qDebug() << "grabbed frame" << _frame_counter++ << r;
     }
@@ -220,7 +219,7 @@ void PylonCamera::grabImage(CPylonImage &image)
     m_camera->StartGrabbing(1);
 
     while(m_camera->IsGrabbing()){
-        qDebug() << "grabbed frame " << _frame_counter++;
+        //qDebug() << "grabbed frame " << _frame_counter++;
         m_camera->RetrieveResult(1000, ptrGrab, TimeoutHandling_Return);
         if (ptrGrab->GrabSucceeded()) {
             fc.Convert(image, ptrGrab);

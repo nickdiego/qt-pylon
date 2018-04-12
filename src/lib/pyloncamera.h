@@ -37,7 +37,8 @@ signals:
     void videoSurfaceChanged();
     void imageCaptured(const QImage &img);
 
-    // Internal use only
+    // Internal usage only
+    // frame will be in Qimge::Format_RGB32
     void frameGrabbedInternal(const QImage &frame);
 
 public slots:
@@ -46,7 +47,7 @@ public slots:
     bool capture();
 
 private slots:
-    void renderFrame(QImage frame);
+    void renderFrame(const QImage &frame);
 
 private:
     // from Pylon::CImageEventHandler
