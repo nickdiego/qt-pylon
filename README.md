@@ -4,6 +4,8 @@ This project provides a Qt library and demo applicaction providing easy integrat
 [Basler Vision Machines](https://www.baslerweb.com), through their [Pylon Software Suite](
 https://www.baslerweb.com/en/products/software/pylon-linux-x86/).
 
+![Alt text](/screenshots/demo.jpg?raw=true "Demo App")
+
 *PS: Still a Work in Progress :)*
 
 ### Dependencies
