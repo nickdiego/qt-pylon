@@ -47,6 +47,7 @@ void Controller::onImageCaptured(const QImage &img)
 
     img.save(path);
     qDebug() << "Captured image saved to '" << path << "'";
+    m_camera->start();
 }
 
 } // namespace app
