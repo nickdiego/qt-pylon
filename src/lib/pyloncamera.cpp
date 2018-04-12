@@ -5,7 +5,6 @@
 #include <QImage>
 #include <QVideoFrame>
 #include <QVideoSurfaceFormat>
-#include <QStringBuilder>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <pylon/PylonIncludes.h>
@@ -145,12 +144,8 @@ void PylonCamera::captureInternal() {
     CPylonImage pylonImage;
     grabImage(pylonImage);
 
-    const char *f = "dd-MM-yyyy_hh-mm-ss-zzz";
-    QString suffix = QDateTime::currentDateTime().toString(f);
-    QString path = QString("/tmp/pylon-") % suffix % ".jpg";
-
-    PylonCamera::toQImage(pylonImage).save(path);
-    emit imageCaptured(QUrl::fromLocalFile(path));
+    QImage img = PylonCamera::toQImage(pylonImage);
+    emit imageCaptured(img);
 }
 
 void PylonCamera::startGrabbing()
@@ -158,7 +153,7 @@ void PylonCamera::startGrabbing()
     if (!isOpen())
         throw std::runtime_error("Camera failed to initialize");
 
-    connect(this, SIGNAL(newFrameGrabbed(QImage)), this, SLOT(renderFrame(QImage)));
+    connect(this, &PylonCamera::frameGrabbedInternal, this, &PylonCamera::renderFrame);
 
     m_camera->RegisterImageEventHandler(this, RegistrationMode_ReplaceAll, Cleanup_None);
     m_camera->StartGrabbing(GrabStrategy_OneByOne, GrabLoop_ProvidedByInstantCamera);
@@ -169,7 +164,7 @@ void PylonCamera::stopGrabbing()
     if (!isOpen())
         return;
 
-    disconnect(this, SIGNAL(newFrameGrabbed(QImage)), this, SLOT(renderFrame(QImage)));
+    connect(this, &PylonCamera::frameGrabbedInternal, this, &PylonCamera::renderFrame);
     m_camera->DeregisterImageEventHandler(this);
 
     if (m_camera->IsGrabbing())
@@ -190,7 +185,7 @@ void PylonCamera::OnImageGrabbed(CInstantCamera& camera, const CGrabResultPtr& p
     }
 
     QImage img = toQImage(pylonImage);
-    emit newFrameGrabbed(img);
+    emit frameGrabbedInternal(img);
 }
 
 QImage PylonCamera::toQImage(CPylonImage &pylonImage) {

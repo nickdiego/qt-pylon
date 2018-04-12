@@ -4,6 +4,8 @@
 #include <QStateMachine>
 #include <QState>
 
+class PylonCamera;
+
 namespace app {
 
 class State;
@@ -15,6 +17,7 @@ class Controller : public QStateMachine
   Q_OBJECT
   Q_PROPERTY(app::State *currentState READ currentState NOTIFY currentStateChanged)
   Q_PROPERTY(app::State *homeState MEMBER m_homeState CONSTANT)
+  Q_PROPERTY(PylonCamera *camera MEMBER m_camera CONSTANT)
 
 public:
   explicit Controller(QObject *parent = nullptr);
@@ -25,6 +28,9 @@ public:
 signals:
   void currentStateChanged();
 
+private slots:
+  void onImageCaptured(const QImage &image);
+
 private:
   void setupStateMachine();
   void setCurrentState(State *state);
@@ -33,6 +39,7 @@ private:
 private:
   State *m_currentState;
   State *m_homeState;
+  PylonCamera *m_camera;
 };
 
 } // namespace app

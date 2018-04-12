@@ -12,6 +12,7 @@ void registerQMLTypes()
 {
   qmlRegisterType<app::State>();
   qmlRegisterType<app::Controller>();
+  qmlRegisterType<PylonCamera>();
 }
 
 int main(int argc, char *argv[])
@@ -24,11 +25,8 @@ int main(int argc, char *argv[])
     app::Controller controller;
     controller.start();
 
-    PylonCamera camera(&app);
-
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("controller", &controller);
-    engine.rootContext()->setContextProperty("pylonCamera", &camera);
 
     engine.load(QUrl(QLatin1String("qrc:/qml/main.qml")));
 

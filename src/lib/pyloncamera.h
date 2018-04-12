@@ -35,8 +35,10 @@ signals:
     void isOpenChanged();
     void nameChanged();
     void videoSurfaceChanged();
-    void newFrameGrabbed(QImage frame);
-    void imageCaptured(QUrl url);
+    void imageCaptured(const QImage &img);
+
+    // Internal use only
+    void frameGrabbedInternal(const QImage &frame);
 
 public slots:
     void start();
