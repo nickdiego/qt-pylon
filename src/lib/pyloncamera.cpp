@@ -164,7 +164,7 @@ void PylonCamera::stopGrabbing()
     if (!isOpen())
         return;
 
-    connect(this, &PylonCamera::frameGrabbedInternal, this, &PylonCamera::renderFrame);
+    disconnect(this, &PylonCamera::frameGrabbedInternal, this, &PylonCamera::renderFrame);
     m_camera->DeregisterImageEventHandler(this);
 
     if (m_camera->IsGrabbing())
