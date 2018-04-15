@@ -78,7 +78,7 @@ void PylonCamera::setVideoSurface(QAbstractVideoSurface *surface)
 
 bool PylonCamera::isOpen() const
 {
-    return m_camera != nullptr;
+    return m_camera != nullptr && m_camera->IsOpen();
 }
 
 void PylonCamera::openCamera()
@@ -105,8 +105,9 @@ void PylonCamera::stop()
         return;
 
     stopGrabbing();
-	m_camera->Close();
+    m_camera->Close();
     m_camera->DestroyDevice();
+    delete m_camera;
     m_camera = nullptr;
     m_startRequested = false;
 
