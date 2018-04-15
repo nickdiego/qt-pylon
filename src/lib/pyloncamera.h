@@ -42,7 +42,7 @@ signals:
     void frameGrabbedInternal(const QImage &frame);
 
 public slots:
-    void start();
+    bool start();
     void stop();
     bool capture();
 
@@ -66,6 +66,7 @@ private:
 private:
     QAbstractVideoSurface *m_surface;
     Pylon::CInstantCamera *m_camera;
+    bool m_startRequested;
     QString m_name;
 };
 

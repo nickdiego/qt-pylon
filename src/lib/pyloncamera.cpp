@@ -29,9 +29,11 @@ static long _frame_counter = 0;
 PylonCamera::PylonCamera(QObject *parent) :
     QObject(parent),
     m_surface(nullptr),
-    m_camera(nullptr)
+    m_camera(nullptr),
+    m_startRequested(false)
 {
     PylonInitialize();
+    openCamera();
 }
 
 PylonCamera::~PylonCamera()
@@ -61,9 +63,16 @@ void PylonCamera::setVideoSurface(QAbstractVideoSurface *surface)
     emit videoSurfaceChanged();
 
 	if (m_surface) {
-		start();
-	} else {
-		stop();
+        if (m_surface->isActive()) {
+            start();
+        }
+        connect(m_surface, &QAbstractVideoSurface::activeChanged, [this](bool active) {
+            if (active && m_startRequested) {
+                startGrabbing();
+            } else {
+                stopGrabbing();
+            }
+        });
 	}
 }
 
@@ -99,23 +108,25 @@ void PylonCamera::stop()
 	m_camera->Close();
     m_camera->DestroyDevice();
     m_camera = nullptr;
+    m_startRequested = false;
+
     emit isOpenChanged();
 }
 
-void PylonCamera::start()
+bool PylonCamera::start()
 {
     openCamera();
 
     if (!isOpen()) {
         qWarning() << "Failed to open camera!";
-        return;
+        return false;
     }
 
     CPylonImage img;
     grabImage(img);
     if (!img.IsValid()) {
         qWarning() << "Failed to get camera format metadata!";
-        return;
+        return false;
     }
 
     QSize size(img.GetWidth(), img.GetHeight());
@@ -123,7 +134,9 @@ void PylonCamera::start()
 	QVideoSurfaceFormat format(size, f);
 	m_surface->start(format);
 
+    m_startRequested = true;
     startGrabbing();
+    return true;
 }
 
 bool PylonCamera::capture()
@@ -199,11 +212,12 @@ QImage PylonCamera::toQImage(CPylonImage &pylonImage) {
 
 void PylonCamera::renderFrame(const QImage &img)
 {
-    if (m_surface) {
-        QVideoFrame frame(img);
-        bool r = m_surface->present(frame);
-        //qDebug() << "grabbed frame" << _frame_counter++ << r;
-    }
+    if (!m_surface || !m_surface->isActive())
+        return;
+
+    QVideoFrame frame(img);
+    bool r = m_surface->present(frame);
+    //qDebug() << "grabbed frame" << _frame_counter++ << r;
 }
 
 void PylonCamera::grabImage(CPylonImage &image)
