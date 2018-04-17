@@ -24,7 +24,7 @@ Page {
         VideoOutput {
             id: viewFinder
             anchors.fill: parent
-            visible: camera.isOpen
+            visible: true
 
             source: camera
             fillMode: VideoOutput.PreserveAspectCrop
@@ -53,13 +53,6 @@ Page {
                 }
             }
 
-        }
-
-        Image {
-            id: previewImage
-            anchors.fill: parent
-            fillMode: VideoOutput.PreserveAspectCrop
-            visible: source != null
         }
     }
 }

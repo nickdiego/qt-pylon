@@ -15,17 +15,6 @@ ApplicationWindow {
     height: 600
 
     header: MainToolBar {}
-    ProgressBar {
-        id: progressBar
-        anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
-        }
-        z: 99
-        visible: controller.currentState.busy
-        indeterminate: true
-    }
 
     Drawer {
         id: drawer
@@ -63,18 +52,18 @@ ApplicationWindow {
     StackView {
         id: viewStack
         anchors {
-            top: (progressBar.visible ? progressBar.bottom : parent.top)
+            top: parent.top
             left: parent.left
             right: parent.right
             bottom: parent.bottom
         }
-        state: "camera"
+        state: "home"
         onStateChanged: {
-            console.log("state changed: ", controller.currentState.objectName);
+            console.log("state changed: ", controller.currentState);
         }
         states: [
             State {
-                name: "camera"
+                name: "home"
                 StateChangeScript {
                     script: viewStack.push(startPage)
                 }

@@ -1,41 +1,36 @@
 #include "controller.h"
 
 #include <QDateTime>
+#include <QString>
 #include <QStringBuilder>
 
 #include "pyloncamera.h"
 
-#include "homestate.h"
 #include "logging.h"
 
 namespace app {
 
+const static char *kStateHome = "home";
+
 Controller::Controller(QObject *parent) :
-  QStateMachine(parent),
-  m_currentState(State::empty()),
-  m_homeState(new HomeState(this)),
+  QObject(parent),
+  m_currentState(kStateHome),
   m_camera(new PylonCamera(this))
 {
-  setupStateMachine();
-
   connect(m_camera, &PylonCamera::captured, this,
           &Controller::onImageCaptured);
 
+  m_camera->start();
 }
 
 Controller::~Controller()
 {
 }
 
-void Controller::setCurrentState(State *state)
+void Controller::setCurrentState(const QString &state)
 {
   m_currentState = state;
   emit currentStateChanged();
-}
-
-void Controller::setupStateMachine()
-{
-  QStateMachine::setInitialState(m_homeState);
 }
 
 void Controller::onImageCaptured(const QVector<QImage> &images)

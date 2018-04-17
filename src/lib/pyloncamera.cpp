@@ -71,18 +71,11 @@ void PylonCamera::setVideoSurface(QAbstractVideoSurface *surface)
     m_surface = surface;
     emit videoSurfaceChanged();
 
-	if (m_surface) {
-        if (m_surface->isActive()) {
-            start();
-        }
-        connect(m_surface, &QAbstractVideoSurface::activeChanged, [this](bool active) {
-            if (active && m_startRequested) {
-                startGrabbing();
-            } else {
-                stopGrabbing();
-            }
-        });
-	}
+    if (m_startRequested) {
+        start();
+    } else {
+        stop();
+    }
 }
 
 bool PylonCamera::isOpen() const
@@ -125,6 +118,7 @@ void PylonCamera::stop()
 
 bool PylonCamera::start()
 {
+    m_startRequested = true;
     openCamera();
 
     if (!isOpen()) {
@@ -134,6 +128,11 @@ bool PylonCamera::start()
 
     if (m_camera->IsGrabbing()) {
         qWarning() << "Camera already started!";
+        return true;
+    }
+
+    if (!m_surface) {
+        qWarning() << "Surface not set. Start pending.";
         return true;
     }
 
@@ -152,7 +151,6 @@ bool PylonCamera::start()
         QVideoSurfaceFormat format(size, f);
         m_surface->start(format);
 
-        m_startRequested = true;
     }
     catch (GenICam::GenericException &e) {
         m_camera = nullptr;
@@ -186,7 +184,6 @@ bool PylonCamera::capture(int nFrames, const QString &config)
     }
 
     QtConcurrent::run([this, nFrames]() {
-        qDebug() << __PRETTY_FUNCTION__;
         auto v = grabImage(nFrames);
         QVector<QImage> images(v.size());
 
@@ -249,7 +246,7 @@ QImage PylonCamera::toQImage(CPylonImage &pylonImage) {
 
 void PylonCamera::renderFrame(const QImage &img)
 {
-    if (!m_surface || !m_surface->isActive())
+    if (!m_surface)
         return;
 
     QVideoFrame frame(img);

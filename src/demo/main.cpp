@@ -6,11 +6,9 @@
 
 #include "controller.h"
 #include "logging.h"
-#include "state.h"
 
 void registerQMLTypes()
 {
-  qmlRegisterType<app::State>();
   qmlRegisterType<app::Controller>();
   qmlRegisterType<PylonCamera>();
 }
@@ -23,7 +21,6 @@ int main(int argc, char *argv[])
     initLogging();
     registerQMLTypes();
     app::Controller controller;
-    controller.start();
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("controller", &controller);
