@@ -1,9 +1,12 @@
 #ifndef PYLONDEMO_APP_CONTROLLER_H
 #define PYLONDEMO_APP_CONTROLLER_H
 
+#include <QImage>
 #include <QStateMachine>
 #include <QState>
 
+template <typename t>
+class QVector;
 class PylonCamera;
 
 namespace app {
@@ -29,7 +32,7 @@ signals:
   void currentStateChanged();
 
 private slots:
-  void onImageCaptured(const QImage &image);
+  void onImageCaptured(const QVector<QImage> &images);
 
 private:
   void setupStateMachine();

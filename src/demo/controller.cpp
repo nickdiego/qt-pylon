@@ -1,7 +1,6 @@
 #include "controller.h"
 
 #include <QDateTime>
-#include <QImage>
 #include <QStringBuilder>
 
 #include "pyloncamera.h"
@@ -19,7 +18,7 @@ Controller::Controller(QObject *parent) :
 {
   setupStateMachine();
 
-  connect(m_camera, &PylonCamera::imageCaptured, this,
+  connect(m_camera, &PylonCamera::captured, this,
           &Controller::onImageCaptured);
 
 }
@@ -39,13 +38,15 @@ void Controller::setupStateMachine()
   QStateMachine::setInitialState(m_homeState);
 }
 
-void Controller::onImageCaptured(const QImage &img)
+void Controller::onImageCaptured(const QVector<QImage> &images)
 {
+    Q_ASSERT(images.size() == 1);
+
     const char *f = "dd-MM-yyyy_hh-mm-ss-zzz";
     QString suffix = QDateTime::currentDateTime().toString(f);
     QString path = QString("/tmp/pylon-") % suffix % ".jpg";
 
-    img.save(path);
+    images.first().save(path);
     qDebug() << "Captured image saved to '" << path << "'";
     m_camera->start();
 }
