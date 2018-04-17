@@ -34,6 +34,7 @@ PylonCamera::PylonCamera(QObject *parent) :
     m_camera(nullptr),
     m_startRequested(false)
 {
+    qRegisterMetaType<QVector<QImage> >("QVector<QImage>");
     PylonInitialize();
     openCamera();
 }
@@ -139,8 +140,8 @@ bool PylonCamera::start()
     try {
         restoreOriginalConfig();
 
-        CPylonImage img;
-        grabImage(img);
+        auto v = grabImage();
+        CPylonImage img = v.first();
         if (!img.IsValid()) {
             qWarning() << "Failed to get camera format metadata!";
             return false;
@@ -162,7 +163,7 @@ bool PylonCamera::start()
     return true;
 }
 
-bool PylonCamera::capture(const QString &config)
+bool PylonCamera::capture(int nFrames, const QString &config)
 {
     if (!isOpen()) {
         qWarning() << "Failed to capture: Camera not open!";
@@ -184,14 +185,15 @@ bool PylonCamera::capture(const QString &config)
         }
     }
 
-    QtConcurrent::run([this]() {
+    QtConcurrent::run([this, nFrames]() {
         qDebug() << __PRETTY_FUNCTION__;
+        auto v = grabImage(nFrames);
+        QVector<QImage> images(v.size());
 
-        CPylonImage pylonImage;
-        grabImage(pylonImage);
-
-        QImage img = PylonCamera::toQImage(pylonImage);
-        emit imageCaptured(img);
+        for(int i = 0; i < v.size(); ++i) {
+            images[i] = PylonCamera::toQImage(v[i]);
+        }
+        emit captured(images);
     });
     return true;
 }
@@ -255,27 +257,31 @@ void PylonCamera::renderFrame(const QImage &img)
     //qDebug() << "grabbed frame" << _frame_counter++ << r;
 }
 
-void PylonCamera::grabImage(CPylonImage &image)
+QVector<CPylonImage> PylonCamera::grabImage(int nFrames)
 {
     if (!isOpen())
         throw std::runtime_error("Camera failed to initialize");
 
+    QVector<CPylonImage> images;
     CImageFormatConverter fc;
     fc.OutputPixelFormat = PixelType_RGB8packed;
 
     CGrabResultPtr ptrGrab;
 
-    m_camera->StartGrabbing(1);
+    m_camera->StartGrabbing(nFrames);
 
     while(m_camera->IsGrabbing()){
         //qDebug() << "grabbed frame " << _frame_counter++;
+        CPylonImage image;
         m_camera->RetrieveResult(1000, ptrGrab, TimeoutHandling_Return);
         if (ptrGrab->GrabSucceeded()) {
             fc.Convert(image, ptrGrab);
         }
+        images += image;
     }
 
     m_camera->StopGrabbing();
+    return images;
 }
 
 void PylonCamera::restoreOriginalConfig()

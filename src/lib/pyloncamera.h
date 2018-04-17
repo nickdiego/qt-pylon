@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <QUrl>
+#include <QVector>
 
 #include <pylon/ImageEventHandler.h>
 #include <pylon/stdinclude.h>
@@ -36,7 +37,7 @@ signals:
     void isOpenChanged();
     void nameChanged();
     void videoSurfaceChanged();
-    void imageCaptured(const QImage &img);
+    void captured(const QVector<QImage> &imgs);
 
     // Internal usage only
     // frame will be in Qimge::Format_RGB32
@@ -45,7 +46,7 @@ signals:
 public slots:
     bool start();
     void stop();
-    bool capture(const QString &config = QString());
+    bool capture(int n = 1, const QString &config = QString());
 
 private slots:
     void renderFrame(const QImage &frame);
@@ -60,7 +61,7 @@ private:
     void stopGrabbing();
     void setName(const char *name);
 
-    void grabImage(Pylon::CPylonImage &image);
+    QVector<Pylon::CPylonImage> grabImage(int n = 1);
     static QImage toQImage(Pylon::CPylonImage &pylonImage);
     void restoreOriginalConfig();
 
