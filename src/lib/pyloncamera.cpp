@@ -23,6 +23,8 @@ using Pylon::RegistrationMode_ReplaceAll;
 using Pylon::Cleanup_None;
 using Pylon::GrabStrategy_OneByOne;
 using Pylon::GrabLoop_ProvidedByInstantCamera;
+using Pylon::CFeaturePersistence;
+using Pylon::String_t;
 
 static long _frame_counter = 0;
 
@@ -97,11 +99,15 @@ void PylonCamera::openCamera()
         setName(m_camera->GetDeviceInfo().GetModelName().c_str());
         qDebug() << "Opening device" << m_name << "..";
         m_camera->Open();
+
+        CFeaturePersistence::SaveToString(m_originalConfig, &m_camera->GetNodeMap());
+        qDebug() << "Saved original config: " << m_originalConfig.c_str();
+
         emit isOpenChanged();
     }
     catch (GenICam::GenericException &e) {
         m_camera = nullptr;
-        qWarning() << "An exception occurred." << e.GetDescription();
+        qWarning() << "Camera Error: " << e.GetDescription();
     }
 }
 
@@ -130,24 +136,33 @@ bool PylonCamera::start()
         return true;
     }
 
-    CPylonImage img;
-    grabImage(img);
-    if (!img.IsValid()) {
-        qWarning() << "Failed to get camera format metadata!";
-        return false;
+    try {
+        restoreOriginalConfig();
+
+        CPylonImage img;
+        grabImage(img);
+        if (!img.IsValid()) {
+            qWarning() << "Failed to get camera format metadata!";
+            return false;
+        }
+
+        QSize size(img.GetWidth(), img.GetHeight());
+        QVideoFrame::PixelFormat f = QVideoFrame::pixelFormatFromImageFormat(QImage::Format_RGB32);
+        QVideoSurfaceFormat format(size, f);
+        m_surface->start(format);
+
+        m_startRequested = true;
+    }
+    catch (GenICam::GenericException &e) {
+        m_camera = nullptr;
+        qWarning() << "Camera Error: " << e.GetDescription();
     }
 
-    QSize size(img.GetWidth(), img.GetHeight());
-    QVideoFrame::PixelFormat f = QVideoFrame::pixelFormatFromImageFormat(QImage::Format_RGB32);
-	QVideoSurfaceFormat format(size, f);
-	m_surface->start(format);
-
-    m_startRequested = true;
     startGrabbing();
     return true;
 }
 
-bool PylonCamera::capture()
+bool PylonCamera::capture(const QString &config)
 {
     if (!isOpen()) {
         qWarning() << "Failed to capture: Camera not open!";
@@ -155,18 +170,30 @@ bool PylonCamera::capture()
     }
 
     stopGrabbing();
-    QtConcurrent::run(this, &PylonCamera::captureInternal);
+
+    if (!config.isEmpty()) {
+        try {
+            qDebug() << "Configuring camera [ config.size=" << config.size() << "]";
+            String_t strconfig(config.toStdString().c_str());
+            CFeaturePersistence::LoadFromString(strconfig, &m_camera->GetNodeMap(), true);
+        }
+        catch (GenICam::GenericException &e) {
+            qWarning() << "Failed to config camera: " << e.GetDescription();
+            restoreOriginalConfig();
+            return false;
+        }
+    }
+
+    QtConcurrent::run([this]() {
+        qDebug() << __PRETTY_FUNCTION__;
+
+        CPylonImage pylonImage;
+        grabImage(pylonImage);
+
+        QImage img = PylonCamera::toQImage(pylonImage);
+        emit imageCaptured(img);
+    });
     return true;
-}
-
-void PylonCamera::captureInternal() {
-    qDebug() << __PRETTY_FUNCTION__;
-
-    CPylonImage pylonImage;
-    grabImage(pylonImage);
-
-    QImage img = PylonCamera::toQImage(pylonImage);
-    emit imageCaptured(img);
 }
 
 void PylonCamera::startGrabbing()
@@ -251,3 +278,9 @@ void PylonCamera::grabImage(CPylonImage &image)
     m_camera->StopGrabbing();
 }
 
+void PylonCamera::restoreOriginalConfig()
+{
+    qDebug() << "Restoring original camera config [ config.size="
+             << m_originalConfig.length() << "]";
+    CFeaturePersistence::LoadFromString(m_originalConfig, &m_camera->GetNodeMap());
+}

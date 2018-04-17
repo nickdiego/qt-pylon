@@ -7,6 +7,7 @@
 #include <QUrl>
 
 #include <pylon/ImageEventHandler.h>
+#include <pylon/stdinclude.h>
 
 namespace Pylon {
     class CInstantCamera;
@@ -44,7 +45,7 @@ signals:
 public slots:
     bool start();
     void stop();
-    bool capture();
+    bool capture(const QString &config = QString());
 
 private slots:
     void renderFrame(const QImage &frame);
@@ -58,16 +59,17 @@ private:
     void startGrabbing();
     void stopGrabbing();
     void setName(const char *name);
-    void captureInternal();
 
     void grabImage(Pylon::CPylonImage &image);
     static QImage toQImage(Pylon::CPylonImage &pylonImage);
+    void restoreOriginalConfig();
 
 private:
     QAbstractVideoSurface *m_surface;
     Pylon::CInstantCamera *m_camera;
     bool m_startRequested;
     QString m_name;
+    Pylon::String_t m_originalConfig;
 };
 
 #endif // PYLON_CAMERA_H
