@@ -40,6 +40,12 @@ PylonCamera::~PylonCamera()
 {
     qDebug() << __PRETTY_FUNCTION__;
     stop();
+
+    m_camera->Close();
+    m_camera->DestroyDevice();
+    delete m_camera;
+    m_camera = nullptr;
+
     PylonTerminate();
 }
 
@@ -105,10 +111,6 @@ void PylonCamera::stop()
         return;
 
     stopGrabbing();
-    m_camera->Close();
-    m_camera->DestroyDevice();
-    delete m_camera;
-    m_camera = nullptr;
     m_startRequested = false;
 
     emit isOpenChanged();
@@ -121,6 +123,11 @@ bool PylonCamera::start()
     if (!isOpen()) {
         qWarning() << "Failed to open camera!";
         return false;
+    }
+
+    if (m_camera->IsGrabbing()) {
+        qWarning() << "Camera already started!";
+        return true;
     }
 
     CPylonImage img;
