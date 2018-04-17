@@ -188,7 +188,7 @@ bool PylonCamera::capture(int nFrames, const QString &config)
         QVector<QImage> images(v.size());
 
         for(int i = 0; i < v.size(); ++i) {
-            images[i] = PylonCamera::toQImage(v[i]);
+            images[i] = PylonCamera::toQImage(v[i]).copy();
         }
         emit captured(images);
     });
