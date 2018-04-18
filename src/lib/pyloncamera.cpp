@@ -26,12 +26,15 @@ using Pylon::GrabLoop_ProvidedByInstantCamera;
 using Pylon::CFeaturePersistence;
 using Pylon::String_t;
 
+const static QSize kDefaultImageSize(1280, 916);
+
 static long _frame_counter = 0;
 
 PylonCamera::PylonCamera(QObject *parent) :
     QObject(parent),
     m_surface(nullptr),
     m_camera(nullptr),
+    m_size(kDefaultImageSize),
     m_startRequested(false)
 {
     qRegisterMetaType<QVector<QImage> >("QVector<QImage>");
@@ -59,6 +62,12 @@ QString PylonCamera::name() const {
 void PylonCamera::setName(const char *name) {
     m_name = QString(name);
     emit nameChanged();
+}
+
+void PylonCamera::setConfig(const QString& configStr)
+{
+    m_config = configStr.toStdString().c_str();
+    qDebug() << "Using default custom config: " << m_config.c_str();
 }
 
 QAbstractVideoSurface *PylonCamera::videoSurface() const
@@ -94,8 +103,10 @@ void PylonCamera::openCamera()
         qDebug() << "Opening device" << m_name << "..";
         m_camera->Open();
 
-        CFeaturePersistence::SaveToString(m_originalConfig, &m_camera->GetNodeMap());
-        qDebug() << "Saved original config: " << m_originalConfig.c_str();
+        if (m_config.empty()) {
+            CFeaturePersistence::SaveToString(m_config, &m_camera->GetNodeMap());
+            qDebug() << "Saved original config: ( size:" << m_config.size() << " )";
+        }
 
         emit isOpenChanged();
     }
@@ -188,7 +199,7 @@ bool PylonCamera::capture(int nFrames, const QString &config)
         QVector<QImage> images(v.size());
 
         for(int i = 0; i < v.size(); ++i) {
-            images[i] = PylonCamera::toQImage(v[i]).copy();
+            images[i] = PylonCamera::toQImage(v[i]);
         }
         emit captured(images);
     });
@@ -241,7 +252,7 @@ QImage PylonCamera::toQImage(CPylonImage &pylonImage) {
     void *buffer = pylonImage.GetBuffer();
     int step = pylonImage.GetAllocatedBufferSize() / height;
     QImage img(static_cast<uchar*>(buffer), width, height, step, QImage::Format_RGB888);
-    return img;
+    return img.scaled(m_size);
 }
 
 void PylonCamera::renderFrame(const QImage &img)
@@ -251,7 +262,7 @@ void PylonCamera::renderFrame(const QImage &img)
 
     QVideoFrame frame(img);
     bool r = m_surface->present(frame);
-    //qDebug() << "grabbed frame" << _frame_counter++ << r;
+    //qDebug() << "grabbed frame" << _frame_counter++ << r << img;
 }
 
 QVector<CPylonImage> PylonCamera::grabImage(int nFrames)
@@ -284,6 +295,6 @@ QVector<CPylonImage> PylonCamera::grabImage(int nFrames)
 void PylonCamera::restoreOriginalConfig()
 {
     qDebug() << "Restoring original camera config [ config.size="
-             << m_originalConfig.length() << "]";
-    CFeaturePersistence::LoadFromString(m_originalConfig, &m_camera->GetNodeMap());
+             << m_config.size() << "]";
+    CFeaturePersistence::LoadFromString(m_config, &m_camera->GetNodeMap());
 }

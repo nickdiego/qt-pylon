@@ -3,6 +3,7 @@
 
 #include <QAbstractVideoSurface>
 #include <QObject>
+#include <QSize>
 #include <QString>
 #include <QUrl>
 #include <QVector>
@@ -32,6 +33,7 @@ public:
     QAbstractVideoSurface *videoSurface() const;
     QString name() const;
     bool isOpen() const;
+    void setConfig(const QString& configStr);
 
 signals:
     void isOpenChanged();
@@ -62,15 +64,16 @@ private:
     void setName(const char *name);
 
     QVector<Pylon::CPylonImage> grabImage(int n = 1);
-    static QImage toQImage(Pylon::CPylonImage &pylonImage);
+    QImage toQImage(Pylon::CPylonImage &pylonImage);
     void restoreOriginalConfig();
 
 private:
     QAbstractVideoSurface *m_surface;
     Pylon::CInstantCamera *m_camera;
+    QSize m_size;
     bool m_startRequested;
     QString m_name;
-    Pylon::String_t m_originalConfig;
+    Pylon::String_t m_config;
 };
 
 #endif // PYLON_CAMERA_H
