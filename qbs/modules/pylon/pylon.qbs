@@ -32,15 +32,15 @@ Module {
     }
 
     setupRunEnvironment: {
-        if (product.pylon.found) {
+        if (found) {
             var env = Environment.currentEnv();
-            if (product.qbs.hostOS.contains("unix") && product.qbs.targetOS.contains("unix")) {
-                env["LD_LIBRARY_PATH"] = PathTools.prependOrSetPath(product.pylon.libraryPaths.join(product.qbs.pathListSeparator),
-                                                                    env["LD_LIBRARY_PATH"], product.qbs.pathListSeparator);
+            if (hostOS.contains("unix") && targetOS.contains("unix")) {
+                env["LD_LIBRARY_PATH"] = PathTools.prependOrSetPath(libraryPaths.join(pathListSeparator),
+                                                                    env["LD_LIBRARY_PATH"], pathListSeparator);
             }
             for (var i in env) {
                 var v = new ModUtils.EnvironmentVariable(i, qbs.pathListSeparator,
-                product.qbs.hostOS.contains("windows"));
+                hostOS.contains("windows"));
                 v.value = env[i];
                 v.set();
             }
