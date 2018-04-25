@@ -166,6 +166,7 @@ bool PylonCamera::start()
     catch (GenICam::GenericException &e) {
         m_camera = nullptr;
         qWarning() << "Camera Error: " << e.GetDescription();
+        return false;
     }
 
     startGrabbing();
