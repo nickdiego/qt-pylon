@@ -39,7 +39,7 @@ PylonCamera::PylonCamera(QObject *parent) :
 {
     qRegisterMetaType<QVector<QImage> >("QVector<QImage>");
     PylonInitialize();
-    openCamera();
+    open();
 }
 
 PylonCamera::~PylonCamera()
@@ -92,7 +92,7 @@ bool PylonCamera::isOpen() const
     return m_camera != nullptr && m_camera->IsOpen();
 }
 
-void PylonCamera::openCamera()
+void PylonCamera::open()
 {
     if (isOpen())
         return;
@@ -130,7 +130,7 @@ void PylonCamera::stop()
 bool PylonCamera::start()
 {
     m_startRequested = true;
-    openCamera();
+    open();
 
     if (!isOpen()) {
         qWarning() << "Failed to open camera!";

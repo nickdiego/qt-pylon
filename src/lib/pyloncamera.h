@@ -29,6 +29,7 @@ public:
     explicit PylonCamera(QObject *parent = nullptr);
     virtual ~PylonCamera();
 
+    void open();
     void setVideoSurface(QAbstractVideoSurface *surface);
     QAbstractVideoSurface *videoSurface() const;
     QString name() const;
@@ -58,7 +59,6 @@ private:
     virtual void OnImageGrabbed(Pylon::CInstantCamera& camera,
                                 const Pylon::CGrabResultPtr& ptrGrab);
 
-    void openCamera();
     void startGrabbing();
     void stopGrabbing();
     void setName(const char *name);
