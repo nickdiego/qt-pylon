@@ -9,6 +9,7 @@
 #include <QVector>
 
 #include <pylon/ImageEventHandler.h>
+#include <pylon/ConfigurationEventHandler.h>
 #include <pylon/stdinclude.h>
 
 namespace Pylon {
@@ -17,7 +18,10 @@ namespace Pylon {
     class CGrabResultPtr;
 }
 
-class PylonCamera : public QObject, public Pylon::CImageEventHandler
+class PylonCamera : public QObject
+    , public Pylon::CImageEventHandler
+    , public Pylon::CConfigurationEventHandler
+
 {
     Q_OBJECT
     Q_PROPERTY(bool isOpen READ isOpen NOTIFY isOpenChanged)
@@ -45,6 +49,7 @@ signals:
     // Internal usage only
     // frame will be in Qimge::Format_RGB32
     void frameGrabbedInternal(const QImage &frame);
+    void cameraRemovedInternal();
 
 public slots:
     bool start();
@@ -53,11 +58,17 @@ public slots:
 
 private slots:
     void renderFrame(const QImage &frame);
+    void handleCameraRemoved();
 
 private:
     // from Pylon::CImageEventHandler
+    // FIXME Move to p_impl??
     virtual void OnImageGrabbed(Pylon::CInstantCamera& camera,
                                 const Pylon::CGrabResultPtr& ptrGrab);
+
+    // from Pylon::CConfigurationEventHandler
+    // FIXME Move to p_impl??
+    virtual void OnCameraDeviceRemoved(Pylon::CInstantCamera&);
 
     void startGrabbing();
     void stopGrabbing();
