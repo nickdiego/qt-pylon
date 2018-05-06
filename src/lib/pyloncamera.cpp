@@ -58,11 +58,13 @@ PylonCamera::~PylonCamera()
     PylonTerminate();
 }
 
-QString PylonCamera::name() const {
+QString PylonCamera::name() const
+{
     return m_name;
 }
 
-void PylonCamera::setName(const char *name) {
+void PylonCamera::setName(const char *name)
+{
     m_name = QString(name);
     emit nameChanged();
 }
@@ -277,7 +279,8 @@ void PylonCamera::handleCameraRemoved()
     emit isOpenChanged();
 }
 
-QImage PylonCamera::toQImage(CPylonImage &pylonImage) {
+QImage PylonCamera::toQImage(CPylonImage &pylonImage)
+{
     int width = pylonImage.GetWidth();
     int height = pylonImage.GetHeight();
     void *buffer = pylonImage.GetBuffer();
